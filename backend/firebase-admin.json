@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "innovation-labs-bengaluru",
+  "private_key_id": "3d0f9c74b839e9383418a1e4421c5b94a36cf340",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7Kx8r/zYB/kUo\nkKzLEZcgdPHf4zrxUQZN4GlakzeEl8aB50bOnPjsN+A6b2SDHNdBYpwV+dTk5Jl3\nB76ZzAkfe1oHEEH2IgPyxiKJX72X0JOFjBjh4Sg+L6E1Pa7o91PVIhstpg/UwXto\n7bKzI+sr/d+Push20Ljarfvxc5mbjA9LJOd3Wzjzn3Mx3SSK0wamjvr4DG/AYyoG\nOlKWyZCOtOB5G0pwxipsWdp+zuO8PrvqeTziQC1cc6gOc8xQcVDbRvIfL1NjcaDA\nwHNE4IbPGBrK9SAnasZ9Uqb2nE0CrPDg/WUobroA2wDN9UJ+mKVgsncm6NN4WEB+\nKX3Y1Sa5AgMBAAECggEAFCCordWNxvHDbtT9ZVUTQxqbDDA7yB77e5J0zJhk8a2q\nBjw1zBrrVekTBEBdtw/PQikgOejE8THNeGnCdc2QSZdn8LcvMLsrC4eCcp1zc7Oq\nuZjS8C+DYV9D3x2EBWow1LcMjyslgVlRM9Ej/3RkYjW0k0NLMs5yopRFMguewDBE\nwiY7ODa9B0GVWY6zr9wJEQAOHhWoRDZ+D4oovUJLnR8bSjAEs0vw6Iq1UQaVST6s\nP61LKbW69P9wE/QJThsXLvNAWaV+odcGHtdH/IuNty9wy1QwyALb4k2yjWxeuRmN\n94O8C1nr8bHOcWDWS3Sdpm5jU2OTP1UAVR+SmW2P1QKBgQDstwj9bJvqyssbDXsw\n3j+HrIiR7pogLmIj5f+yofuacMsXdpDbxBAipEsQXVi3l+YhK56iFkAE4kHAjCPf\nPMw9k4m6jZmOJjmrbRgFFo/vRBWdFBVBZucb03uW0khpSlnJrWfoBIGAb7nmQsd5\nSmn46XxY+RRW7i+ytqgbCSRaKwKBgQDKarx9VQHg6LH74s29oLI3fVUJGZUlHLjp\nI1tkIJ9KIaP6xnxhBHiQBxT1LBuzuMenSfF+oivYB4SApjVW7pqm40A9PSxrptyL\nTTz6WYhv03h48KeQVUZFSgUwEP52S3nGeuYh17tp8LgZD0227y6Sr5v0iReBaRUV\njd/pS4zEqwKBgAe3D3vzBkHoyiXfkpxNIhTx8qGO/Ub/PAOfg233CZRHCNeC7cW7\n5iq64Bdwc2vIb5+1JD50KzH9jdcQujqUaLO5E0wZQV/4rvh/XcEMszRBK9MqzGaN\nTAsEIYsQ33tPCQ4hsLlHLFFbUtvGYWn6mumZ8ouT0q3ipXtVqLT4305xAoGAFvRT\nu8LQG7lHtdDalA6NJ03HPujvyO2g6o9f5dLtPXLjLaUkpbvkEDE9ZzBBU/g4a/gu\nsrWhUzZHCG/QzLLyRsqulkNBrlOV3xY7PAi7ODM7Djv8RJnnBiSGwhSrRq74eFGn\nl17nmfP6bJ0Xqw8ksO3JOcnyKHLKOU+FfOdcZ1ECgYEAoIUZ76X6BKDP19GJiBkW\nPyHOJR4nXvelmwDy+FxzSPIOywDoYOdySUJPcUgbZm9j3hO9UMtYy2YH1wTKWpa6\nnSUxeorjFB9Ted8nnenmHAov86kkKGHgA3LVdHUTViwizHGszKweUY08CvVeMWug\nDvtC6Am6q0nAwOym7wF7RiY=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@innovation-labs-bengaluru.iam.gserviceaccount.com",
+  "client_id": "108212721357861895197",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40innovation-labs-bengaluru.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

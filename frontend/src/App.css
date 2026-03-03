@@ -1,0 +1,10 @@
+.App {
+  min-height: 100vh;
+}
+
+.gradient-text {
+  background: linear-gradient(to right, #FF6B6B, #FFD93D, #4D96FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
