@@ -1,22 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Lock, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { adminApi } from '@/lib/adminApi';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function AdminLogin() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    // Landing on the login page means any previous session is no longer
+    // usable — drop it so a stale/expired token can't leak into later calls.
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_username');
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await adminApi.post('/login', credentials);
+      // Plain axios, not the adminApi instance — its interceptor would attach
+      // a stored token automatically, and login must go out unauthenticated.
+      const response = await axios.post(`${BACKEND_URL}/login`, credentials);
       localStorage.setItem('admin_token', response.data.token);
       localStorage.setItem('admin_username', response.data.username || credentials.username);
       toast.success('Login successful!');
