@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import RichText from '@/components/RichText';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -133,7 +134,7 @@ export default function Products() {
                     <h3 className="text-xl font-semibold font-heading text-[#2D3436]">{product.name}</h3>
                     <span className="text-xl font-bold text-[#FF6B6B]">₹{product.price}</span>
                   </div>
-                  <p className="text-[#636E72] text-sm mb-4 leading-relaxed">{product.description}</p>
+                  <RichText text={product.description} className="text-[#636E72] mb-4" />
                   <div className="flex gap-2 mb-4">
                     <span className="text-xs px-3 py-1 rounded-full bg-[#FFD93D]/20 text-[#2D3436] font-medium">
                       {product.category}

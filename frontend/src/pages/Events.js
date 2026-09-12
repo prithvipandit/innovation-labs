@@ -7,6 +7,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { toast } from 'sonner';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import RichText from '@/components/RichText';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -105,7 +106,7 @@ export default function Events() {
                 </div>
                 <div className="p-6">
                   <h3 className="text-2xl font-semibold font-heading mb-3 text-[#2D3436]">{event.title}</h3>
-                  <p className="text-[#636E72] mb-4 leading-relaxed">{event.description}</p>
+                  <RichText text={event.description} className="text-[#636E72] mb-4" />
                   
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-[#636E72]">
