@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Plus, Edit, Trash2, LogOut, Package, Calendar, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { adminApi } from '@/lib/adminApi';
+import RichTextEditor from '@/components/RichTextEditor';
+import RichText from '@/components/RichText';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const EMPTY_PRODUCT_FORM = {
   name: '', description: '', price: '', category: 'Robotics', age_group: '5-7', image_url: '', created_at: ''
@@ -46,10 +50,12 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
+      // Public read endpoints — fetched without the admin token so an expired
+      // (or absent) session doesn't block the dashboard from loading data.
       const [productsRes, eventsRes, reviewsRes] = await Promise.all([
-        adminApi.get('/api/products'),
-        adminApi.get('/api/events'),
-        adminApi.get('/api/reviews')
+        axios.get(`${BACKEND_URL}/api/products`),
+        axios.get(`${BACKEND_URL}/api/events`),
+        axios.get(`${BACKEND_URL}/api/reviews`)
       ]);
       setProducts(productsRes.data);
       setEvents(eventsRes.data);
@@ -70,15 +76,26 @@ export default function AdminDashboard() {
     setSaving(true);
     try {
       if (editingProduct) {
-        await adminApi.put(`/api/products/${editingProduct.id}`, {
-          name: productForm.name,
-          description: productForm.description,
-          category: productForm.category,
-          age_group: productForm.age_group,
-          price: Number(productForm.price),
-          image_url: productForm.image_url,
-          created_at: productForm.created_at
-        });
+        if (productImageFile) {
+          const formData = new FormData();
+          formData.append('name', productForm.name);
+          formData.append('category', productForm.category);
+          formData.append('age_group', productForm.age_group);
+          formData.append('price', productForm.price);
+          formData.append('description', productForm.description);
+          formData.append('file', productImageFile);
+          await adminApi.put(`/api/products/${editingProduct.id}`, formData);
+        } else {
+          await adminApi.put(`/api/products/${editingProduct.id}`, {
+            name: productForm.name,
+            description: productForm.description,
+            category: productForm.category,
+            age_group: productForm.age_group,
+            price: Number(productForm.price),
+            image_url: productForm.image_url,
+            created_at: productForm.created_at
+          });
+        }
         toast.success('Product updated!');
       } else {
         if (!productImageFile) {
@@ -113,17 +130,30 @@ export default function AdminDashboard() {
     setSaving(true);
     try {
       if (editingEvent) {
-        await adminApi.put(`/api/events/${editingEvent.id}`, {
-          title: eventForm.title,
-          description: eventForm.description,
-          start_date: eventForm.start_date,
-          end_date: eventForm.end_date,
-          location: eventForm.location,
-          age_group: eventForm.age_group,
-          price: Number(eventForm.price),
-          image_url: eventForm.image_url,
-          created_at: eventForm.created_at
-        });
+        if (eventImageFile) {
+          const formData = new FormData();
+          formData.append('title', eventForm.title);
+          formData.append('description', eventForm.description);
+          formData.append('start_date', eventForm.start_date);
+          formData.append('end_date', eventForm.end_date);
+          formData.append('location', eventForm.location);
+          formData.append('age_group', eventForm.age_group);
+          formData.append('price', eventForm.price);
+          formData.append('file', eventImageFile);
+          await adminApi.put(`/api/events/${editingEvent.id}`, formData);
+        } else {
+          await adminApi.put(`/api/events/${editingEvent.id}`, {
+            title: eventForm.title,
+            description: eventForm.description,
+            start_date: eventForm.start_date,
+            end_date: eventForm.end_date,
+            location: eventForm.location,
+            age_group: eventForm.age_group,
+            price: Number(eventForm.price),
+            image_url: eventForm.image_url,
+            created_at: eventForm.created_at
+          });
+        }
         toast.success('Event updated!');
       } else {
         if (!eventImageFile) {
@@ -287,7 +317,7 @@ export default function AdminDashboard() {
                   <img src={product.image_url} alt={product.name} className="w-full h-40 object-cover" />
                   <div className="p-4">
                     <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                    <p className="text-sm text-[#636E72] mb-2">{product.description}</p>
+                    <RichText text={product.description} className="text-[#636E72] mb-2" />
                     <div className="flex justify-between items-center mb-3">
                       <span className="font-bold text-[#FF6B6B]">₹{product.price}</span>
                       <div className="flex gap-1">
@@ -343,7 +373,7 @@ export default function AdminDashboard() {
                   <img src={event.image_url} alt={event.title} className="w-full h-48 object-cover" />
                   <div className="p-4">
                     <h3 className="font-semibold text-lg mb-2">{event.title}</h3>
-                    <p className="text-sm text-[#636E72] mb-2">{event.description}</p>
+                    <RichText text={event.description} className="text-[#636E72] mb-2" />
                     <div className="text-xs text-[#636E72] mb-3">
                       <p>{new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}</p>
                       <p>{event.location} | Ages {event.age_group} | ₹{event.price}</p>
@@ -427,11 +457,11 @@ export default function AdminDashboard() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Description</label>
-              <Textarea
+              <RichTextEditor
                 value={productForm.description}
-                onChange={(e) => setProductForm({...productForm, description: e.target.value})}
+                onChange={(value) => setProductForm({...productForm, description: value})}
                 required
-                data-testid="product-description-input"
+                dataTestId="product-description-input"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -475,27 +505,24 @@ export default function AdminDashboard() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Image</label>
-              {editingProduct ? (
-                <Input
-                  value={productForm.image_url}
-                  onChange={(e) => setProductForm({...productForm, image_url: e.target.value})}
-                  placeholder="Image URL"
-                  data-testid="product-image-url-input"
-                />
-              ) : (
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setProductImageFile(e.target.files[0])}
-                  required
-                  data-testid="product-image-upload"
-                />
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setProductImageFile(e.target.files[0] || null)}
+                required={!editingProduct}
+                data-testid="product-image-upload"
+              />
+              {editingProduct && (
+                <p className="text-xs text-[#636E72] mt-1">
+                  Leave empty to keep the current image, or select a new file to replace it.
+                </p>
               )}
-              {productImageFile && (
+              {productImageFile ? (
                 <img src={URL.createObjectURL(productImageFile)} alt="Preview" className="mt-2 h-32 rounded-lg" />
-              )}
-              {editingProduct && productForm.image_url && (
-                <img src={productForm.image_url} alt="Preview" className="mt-2 h-32 rounded-lg" />
+              ) : (
+                editingProduct && productForm.image_url && (
+                  <img src={productForm.image_url} alt="Current" className="mt-2 h-32 rounded-lg" />
+                )
               )}
             </div>
             <Button type="submit" className="w-full rounded-full" disabled={saving} data-testid="save-product-btn">
@@ -523,11 +550,11 @@ export default function AdminDashboard() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Description</label>
-              <Textarea
+              <RichTextEditor
                 value={eventForm.description}
-                onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
+                onChange={(value) => setEventForm({...eventForm, description: value})}
                 required
-                data-testid="event-description-input"
+                dataTestId="event-description-input"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -588,27 +615,24 @@ export default function AdminDashboard() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Image</label>
-              {editingEvent ? (
-                <Input
-                  value={eventForm.image_url}
-                  onChange={(e) => setEventForm({...eventForm, image_url: e.target.value})}
-                  placeholder="Image URL"
-                  data-testid="event-image-url-input"
-                />
-              ) : (
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setEventImageFile(e.target.files[0])}
-                  required
-                  data-testid="event-image-upload"
-                />
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setEventImageFile(e.target.files[0] || null)}
+                required={!editingEvent}
+                data-testid="event-image-upload"
+              />
+              {editingEvent && (
+                <p className="text-xs text-[#636E72] mt-1">
+                  Leave empty to keep the current image, or select a new file to replace it.
+                </p>
               )}
-              {eventImageFile && (
+              {eventImageFile ? (
                 <img src={URL.createObjectURL(eventImageFile)} alt="Preview" className="mt-2 h-32 rounded-lg" />
-              )}
-              {editingEvent && eventForm.image_url && (
-                <img src={eventForm.image_url} alt="Preview" className="mt-2 h-32 rounded-lg" />
+              ) : (
+                editingEvent && eventForm.image_url && (
+                  <img src={eventForm.image_url} alt="Current" className="mt-2 h-32 rounded-lg" />
+                )
               )}
             </div>
             <Button type="submit" className="w-full rounded-full" disabled={saving} data-testid="save-event-btn">

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { toast } from 'sonner';
+import RichText from '@/components/RichText';
 import "../css/Hero.css";
 import bac_1 from "../images/bac_1.png";
 import bac_2 from "../images/bac_2.png";
@@ -205,7 +206,7 @@ export default function Home() {
                       <h3 className="text-xl font-semibold font-heading text-[#2D3436]">{product.name}</h3>
                       <span className="text-lg font-bold text-[#FF6B6B]">₹{product.price}</span>
                     </div>
-                    <p className="text-[#636E72] text-sm mb-3">{product.description}</p>
+                    <RichText text={product.description} className="text-[#636E72] mb-3" />
                     <div className="flex gap-2">
                       <span className="text-xs px-3 py-1 rounded-full bg-[#FFD93D]/20 text-[#2D3436] font-medium">{product.category}</span>
                       <span className="text-xs px-3 py-1 rounded-full bg-[#6BCB77]/20 text-[#2D3436] font-medium">Ages {product.age_group}</span>
@@ -236,7 +237,7 @@ export default function Home() {
                   <img src={event.image_url} alt={event.title} className="w-full h-56 object-cover" />
                   <div className="p-6">
                     <h3 className="text-2xl font-semibold font-heading mb-2 text-[#2D3436]">{event.title}</h3>
-                    <p className="text-[#636E72] mb-4">{event.description}</p>
+                    <RichText text={event.description} className="text-[#636E72] mb-4" />
                     <div className="flex justify-between items-center">
                       <div className="text-sm text-[#636E72]">
                         <p>{new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}</p>
