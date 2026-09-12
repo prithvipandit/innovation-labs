@@ -1,23 +1,24 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+import { BACKEND_URL } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const { login, logout } = useAuth();
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Landing on the login page means any previous session is no longer
     // usable — drop it so a stale/expired token can't leak into later calls.
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_username');
+    logout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogin = async (e) => {
@@ -25,18 +26,21 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // Plain axios, not the adminApi instance — its interceptor would attach
+      // Plain axios, not the api instance — its interceptor would attach
       // a stored token automatically, and login must go out unauthenticated.
       const response = await axios.post(`${BACKEND_URL}/login`, credentials);
-      localStorage.setItem('admin_token', response.data.token);
-      localStorage.setItem('admin_username', response.data.username || credentials.username);
-      toast.success('Login successful!');
+      login({
+        token: response.data.token,
+        refreshToken: response.data.refreshToken,
+        username: credentials.username,
+      });
+      toast.success(response.data.message || 'Login successful!');
       setTimeout(() => {
         navigate('/admin/dashboard');
       }, 500);
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error.response?.data?.detail || 'Invalid credentials');
+      toast.error(error.response?.data?.detail || error.response?.data?.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }
@@ -90,14 +94,23 @@ export default function AdminLogin() {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="w-full rounded-full py-6 text-lg font-bold bg-[#FF6B6B] hover:bg-[#FF5252] text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid="admin-login-btn"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
+
+          <div className="flex justify-between text-sm">
+            <Link to="/forgot-password" className="text-[#4D96FF] hover:underline" data-testid="forgot-password-link">
+              Forgot password?
+            </Link>
+            <Link to="/register" className="text-[#4D96FF] hover:underline" data-testid="register-link">
+              Create an account
+            </Link>
+          </div>
         </form>
       </Card>
     </div>
