@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Lock, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { adminApi } from '@/lib/adminApi';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -17,11 +14,11 @@ export default function AdminLogin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const response = await axios.post(`${API}/admin/login`, credentials);
+      const response = await adminApi.post('/login', credentials);
       localStorage.setItem('admin_token', response.data.token);
-      localStorage.setItem('admin_username', response.data.username);
+      localStorage.setItem('admin_username', response.data.username || credentials.username);
       toast.success('Login successful!');
       setTimeout(() => {
         navigate('/admin/dashboard');

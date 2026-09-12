@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Plus, Edit, Trash2, LogOut, Upload, Package, Calendar, MessageSquare } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, Package, Calendar, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,9 +8,15 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { adminApi } from '@/lib/adminApi';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const EMPTY_PRODUCT_FORM = {
+  name: '', description: '', price: '', category: 'Robotics', age_group: '5-7', image_url: '', created_at: ''
+};
+
+const EMPTY_EVENT_FORM = {
+  title: '', description: '', start_date: '', end_date: '', location: '', age_group: '5-7', price: '', image_url: '', created_at: ''
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -22,15 +27,13 @@ export default function AdminDashboard() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [productImageFile, setProductImageFile] = useState(null);
+  const [eventImageFile, setEventImageFile] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  const [productForm, setProductForm] = useState({
-    name: '', description: '', price: '', category: 'Robotics', age_group: '5-7', image_url: ''
-  });
+  const [productForm, setProductForm] = useState(EMPTY_PRODUCT_FORM);
 
-  const [eventForm, setEventForm] = useState({
-    title: '', description: '', start_date: '', end_date: '', location: '', age_group: '5-7', price: '', image_url: ''
-  });
+  const [eventForm, setEventForm] = useState(EMPTY_EVENT_FORM);
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -44,9 +47,9 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       const [productsRes, eventsRes, reviewsRes] = await Promise.all([
-        axios.get(`${API}/products`),
-        axios.get(`${API}/events`),
-        axios.get(`${API}/reviews`)
+        adminApi.get('/api/products'),
+        adminApi.get('/api/events'),
+        adminApi.get('/api/reviews')
       ]);
       setProducts(productsRes.data);
       setEvents(eventsRes.data);
@@ -56,78 +59,106 @@ export default function AdminDashboard() {
     }
   };
 
-  const getAuthHeader = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` }
-  });
-
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_username');
     navigate('/admin/login');
   };
 
-  const handleImageUpload = async (file, formType) => {
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const response = await axios.post(`${API}/upload`, formData, getAuthHeader());
-      
-      if (formType === 'product') {
-        setProductForm({...productForm, image_url: response.data.url});
-      } else {
-        setEventForm({...eventForm, image_url: response.data.url});
-      }
-      toast.success('Image uploaded!');
-    } catch (error) {
-      toast.error('Failed to upload image');
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleProductSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
     try {
       if (editingProduct) {
-        await axios.put(`${API}/products/${editingProduct.id}`, productForm, getAuthHeader());
+        await adminApi.put(`/api/products/${editingProduct.id}`, {
+          name: productForm.name,
+          description: productForm.description,
+          category: productForm.category,
+          age_group: productForm.age_group,
+          price: Number(productForm.price),
+          image_url: productForm.image_url,
+          created_at: productForm.created_at
+        });
         toast.success('Product updated!');
       } else {
-        await axios.post(`${API}/products`, productForm, getAuthHeader());
+        if (!productImageFile) {
+          toast.error('Please select an image');
+          setSaving(false);
+          return;
+        }
+        const formData = new FormData();
+        formData.append('name', productForm.name);
+        formData.append('category', productForm.category);
+        formData.append('age_group', productForm.age_group);
+        formData.append('price', productForm.price);
+        formData.append('description', productForm.description);
+        formData.append('file', productImageFile);
+        await adminApi.post('/api/products', formData);
         toast.success('Product created!');
       }
       setShowProductModal(false);
       setEditingProduct(null);
-      setProductForm({ name: '', description: '', price: '', category: 'Robotics', age_group: '5-7', image_url: '' });
+      setProductForm(EMPTY_PRODUCT_FORM);
+      setProductImageFile(null);
       fetchData();
     } catch (error) {
       toast.error('Failed to save product');
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleEventSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
     try {
       if (editingEvent) {
-        await axios.put(`${API}/events/${editingEvent.id}`, eventForm, getAuthHeader());
+        await adminApi.put(`/api/events/${editingEvent.id}`, {
+          title: eventForm.title,
+          description: eventForm.description,
+          start_date: eventForm.start_date,
+          end_date: eventForm.end_date,
+          location: eventForm.location,
+          age_group: eventForm.age_group,
+          price: Number(eventForm.price),
+          image_url: eventForm.image_url,
+          created_at: eventForm.created_at
+        });
         toast.success('Event updated!');
       } else {
-        await axios.post(`${API}/events`, eventForm, getAuthHeader());
+        if (!eventImageFile) {
+          toast.error('Please select an image');
+          setSaving(false);
+          return;
+        }
+        const formData = new FormData();
+        formData.append('title', eventForm.title);
+        formData.append('description', eventForm.description);
+        formData.append('start_date', eventForm.start_date);
+        formData.append('end_date', eventForm.end_date);
+        formData.append('location', eventForm.location);
+        formData.append('age_group', eventForm.age_group);
+        formData.append('price', eventForm.price);
+        formData.append('file', eventImageFile);
+        await adminApi.post('/api/events', formData);
         toast.success('Event created!');
       }
       setShowEventModal(false);
       setEditingEvent(null);
-      setEventForm({ title: '', description: '', start_date: '', end_date: '', location: '', age_group: '5-7', price: '', image_url: '' });
+      setEventForm(EMPTY_EVENT_FORM);
+      setEventImageFile(null);
       fetchData();
     } catch (error) {
       toast.error('Failed to save event');
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDeleteProduct = async (id) => {
     if (window.confirm('Delete this product?')) {
       try {
-        await axios.delete(`${API}/products/${id}`, getAuthHeader());
+        await adminApi.delete(`/api/products/${id}`);
         toast.success('Product deleted');
         fetchData();
       } catch (error) {
@@ -139,7 +170,7 @@ export default function AdminDashboard() {
   const handleDeleteEvent = async (id) => {
     if (window.confirm('Delete this event?')) {
       try {
-        await axios.delete(`${API}/events/${id}`, getAuthHeader());
+        await adminApi.delete(`/api/events/${id}`);
         toast.success('Event deleted');
         fetchData();
       } catch (error) {
@@ -151,7 +182,7 @@ export default function AdminDashboard() {
   const handleDeleteReview = async (id) => {
     if (window.confirm('Delete this review?')) {
       try {
-        await axios.delete(`${API}/reviews/${id}`, getAuthHeader());
+        await adminApi.delete(`/api/reviews/${id}`);
         toast.success('Review deleted');
         fetchData();
       } catch (error) {
@@ -162,19 +193,22 @@ export default function AdminDashboard() {
 
   const openEditProduct = (product) => {
     setEditingProduct(product);
+    setProductImageFile(null);
     setProductForm({
       name: product.name,
       description: product.description,
       price: product.price,
       category: product.category,
       age_group: product.age_group,
-      image_url: product.image_url
+      image_url: product.image_url,
+      created_at: product.created_at
     });
     setShowProductModal(true);
   };
 
   const openEditEvent = (event) => {
     setEditingEvent(event);
+    setEventImageFile(null);
     setEventForm({
       title: event.title,
       description: event.description,
@@ -183,7 +217,8 @@ export default function AdminDashboard() {
       location: event.location,
       age_group: event.age_group,
       price: event.price,
-      image_url: event.image_url
+      image_url: event.image_url,
+      created_at: event.created_at
     });
     setShowEventModal(true);
   };
@@ -236,7 +271,8 @@ export default function AdminDashboard() {
               <Button 
                 onClick={() => {
                   setEditingProduct(null);
-                  setProductForm({ name: '', description: '', price: '', category: 'Robotics', age_group: '5-7', image_url: '' });
+                  setProductForm(EMPTY_PRODUCT_FORM);
+                  setProductImageFile(null);
                   setShowProductModal(true);
                 }}
                 className="rounded-full bg-[#FF6B6B] hover:bg-[#FF5252]"
@@ -291,7 +327,8 @@ export default function AdminDashboard() {
               <Button 
                 onClick={() => {
                   setEditingEvent(null);
-                  setEventForm({ title: '', description: '', start_date: '', end_date: '', location: '', age_group: '5-7', price: '', image_url: '' });
+                  setEventForm(EMPTY_EVENT_FORM);
+                  setEventImageFile(null);
                   setShowEventModal(true);
                 }}
                 className="rounded-full bg-[#4D96FF] hover:bg-[#3A86FF]"
@@ -438,21 +475,31 @@ export default function AdminDashboard() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Image</label>
-              <div className="flex gap-2">
+              {editingProduct ? (
+                <Input
+                  value={productForm.image_url}
+                  onChange={(e) => setProductForm({...productForm, image_url: e.target.value})}
+                  placeholder="Image URL"
+                  data-testid="product-image-url-input"
+                />
+              ) : (
                 <Input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => handleImageUpload(e.target.files[0], 'product')}
-                  disabled={uploading}
+                  onChange={(e) => setProductImageFile(e.target.files[0])}
+                  required
                   data-testid="product-image-upload"
                 />
-              </div>
-              {productForm.image_url && (
+              )}
+              {productImageFile && (
+                <img src={URL.createObjectURL(productImageFile)} alt="Preview" className="mt-2 h-32 rounded-lg" />
+              )}
+              {editingProduct && productForm.image_url && (
                 <img src={productForm.image_url} alt="Preview" className="mt-2 h-32 rounded-lg" />
               )}
             </div>
-            <Button type="submit" className="w-full rounded-full" data-testid="save-product-btn">
-              {editingProduct ? 'Update' : 'Create'} Product
+            <Button type="submit" className="w-full rounded-full" disabled={saving} data-testid="save-product-btn">
+              {saving ? 'Saving...' : `${editingProduct ? 'Update' : 'Create'} Product`}
             </Button>
           </form>
         </DialogContent>
@@ -541,19 +588,31 @@ export default function AdminDashboard() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Image</label>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageUpload(e.target.files[0], 'event')}
-                disabled={uploading}
-                data-testid="event-image-upload"
-              />
-              {eventForm.image_url && (
+              {editingEvent ? (
+                <Input
+                  value={eventForm.image_url}
+                  onChange={(e) => setEventForm({...eventForm, image_url: e.target.value})}
+                  placeholder="Image URL"
+                  data-testid="event-image-url-input"
+                />
+              ) : (
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setEventImageFile(e.target.files[0])}
+                  required
+                  data-testid="event-image-upload"
+                />
+              )}
+              {eventImageFile && (
+                <img src={URL.createObjectURL(eventImageFile)} alt="Preview" className="mt-2 h-32 rounded-lg" />
+              )}
+              {editingEvent && eventForm.image_url && (
                 <img src={eventForm.image_url} alt="Preview" className="mt-2 h-32 rounded-lg" />
               )}
             </div>
-            <Button type="submit" className="w-full rounded-full" data-testid="save-event-btn">
-              {editingEvent ? 'Update' : 'Create'} Event
+            <Button type="submit" className="w-full rounded-full" disabled={saving} data-testid="save-event-btn">
+              {saving ? 'Saving...' : `${editingEvent ? 'Update' : 'Create'} Event`}
             </Button>
           </form>
         </DialogContent>
