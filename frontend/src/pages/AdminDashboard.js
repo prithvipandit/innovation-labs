@@ -8,11 +8,10 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { adminApi } from '@/lib/adminApi';
+import { api, BACKEND_URL } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import RichTextEditor from '@/components/RichTextEditor';
 import RichText from '@/components/RichText';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const EMPTY_PRODUCT_FORM = {
   name: '', description: '', price: '', category: 'Robotics', age_group: '5-7', image_url: '', created_at: ''
@@ -24,6 +23,7 @@ const EMPTY_EVENT_FORM = {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { username, isAuthenticated, logout } = useAuth();
   const [products, setProducts] = useState([]);
   const [events, setEvents] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -40,13 +40,13 @@ export default function AdminDashboard() {
   const [eventForm, setEventForm] = useState(EMPTY_EVENT_FORM);
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
+    if (!isAuthenticated) {
       navigate('/admin/login');
       return;
     }
     fetchData();
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, navigate]);
 
   const fetchData = async () => {
     try {
@@ -66,8 +66,7 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_username');
+    logout();
     navigate('/admin/login');
   };
 
@@ -84,9 +83,9 @@ export default function AdminDashboard() {
           formData.append('price', productForm.price);
           formData.append('description', productForm.description);
           formData.append('file', productImageFile);
-          await adminApi.put(`/api/products/${editingProduct.id}`, formData);
+          await api.put(`/api/products/${editingProduct.id}`, formData);
         } else {
-          await adminApi.put(`/api/products/${editingProduct.id}`, {
+          await api.put(`/api/products/${editingProduct.id}`, {
             name: productForm.name,
             description: productForm.description,
             category: productForm.category,
@@ -110,7 +109,7 @@ export default function AdminDashboard() {
         formData.append('price', productForm.price);
         formData.append('description', productForm.description);
         formData.append('file', productImageFile);
-        await adminApi.post('/api/products', formData);
+        await api.post('/api/products', formData);
         toast.success('Product created!');
       }
       setShowProductModal(false);
@@ -140,9 +139,9 @@ export default function AdminDashboard() {
           formData.append('age_group', eventForm.age_group);
           formData.append('price', eventForm.price);
           formData.append('file', eventImageFile);
-          await adminApi.put(`/api/events/${editingEvent.id}`, formData);
+          await api.put(`/api/events/${editingEvent.id}`, formData);
         } else {
-          await adminApi.put(`/api/events/${editingEvent.id}`, {
+          await api.put(`/api/events/${editingEvent.id}`, {
             title: eventForm.title,
             description: eventForm.description,
             start_date: eventForm.start_date,
@@ -170,7 +169,7 @@ export default function AdminDashboard() {
         formData.append('age_group', eventForm.age_group);
         formData.append('price', eventForm.price);
         formData.append('file', eventImageFile);
-        await adminApi.post('/api/events', formData);
+        await api.post('/api/events', formData);
         toast.success('Event created!');
       }
       setShowEventModal(false);
@@ -188,7 +187,7 @@ export default function AdminDashboard() {
   const handleDeleteProduct = async (id) => {
     if (window.confirm('Delete this product?')) {
       try {
-        await adminApi.delete(`/api/products/${id}`);
+        await api.delete(`/api/products/${id}`);
         toast.success('Product deleted');
         fetchData();
       } catch (error) {
@@ -200,7 +199,7 @@ export default function AdminDashboard() {
   const handleDeleteEvent = async (id) => {
     if (window.confirm('Delete this event?')) {
       try {
-        await adminApi.delete(`/api/events/${id}`);
+        await api.delete(`/api/events/${id}`);
         toast.success('Event deleted');
         fetchData();
       } catch (error) {
@@ -212,7 +211,7 @@ export default function AdminDashboard() {
   const handleDeleteReview = async (id) => {
     if (window.confirm('Delete this review?')) {
       try {
-        await adminApi.delete(`/api/reviews/${id}`);
+        await api.delete(`/api/reviews/${id}`);
         toast.success('Review deleted');
         fetchData();
       } catch (error) {
@@ -266,7 +265,7 @@ export default function AdminDashboard() {
             />
             <div>
               <h1 className="text-2xl font-bold font-heading text-[#2D3436]">Admin Dashboard</h1>
-              <p className="text-sm text-[#636E72]">Welcome, {localStorage.getItem('admin_username')}</p>
+              <p className="text-sm text-[#636E72]">Welcome, {username}</p>
             </div>
           </div>
           <Button 
