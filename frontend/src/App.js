@@ -12,6 +12,7 @@ import Register from "@/pages/Register";
 import VerifyOtp from "@/pages/VerifyOtp";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+import AccountDashboard from "@/pages/account/AccountDashboard";
 
 function App() {
   return (
@@ -30,8 +31,16 @@ function App() {
             <Route
               path="/admin/dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute role="ADMIN">
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <AccountDashboard />
                 </ProtectedRoute>
               }
             />

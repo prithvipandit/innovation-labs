@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Star, Rocket, Sparkles, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import OnboardingDialog from '@/components/OnboardingDialog';
 import { toast } from 'sonner';
 import RichText from '@/components/RichText';
+import { useAuth } from '@/context/AuthContext';
 import "../css/Hero.css";
 import bac_1 from "../images/bac_1.png";
 import bac_2 from "../images/bac_2.png";
@@ -26,11 +28,16 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+const ONBOARDING_DISMISSED_KEY = 'lw_onboarding_dismissed';
+
 export default function Home() {
   const images = [bac_1, bac_2, bac_3, bac_4];
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [products, setProducts] = useState([]);
   const [events, setEvents] = useState([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [reviewForm, setReviewForm] = useState({
     parent_name: '',
     rating: 5,
@@ -40,6 +47,19 @@ export default function Home() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated && sessionStorage.getItem(ONBOARDING_DISMISSED_KEY) !== 'true') {
+      setShowOnboarding(true);
+    }
+  }, [isAuthenticated]);
+
+  const handleOnboardingChange = (open) => {
+    setShowOnboarding(open);
+    if (!open) {
+      sessionStorage.setItem(ONBOARDING_DISMISSED_KEY, 'true');
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -243,7 +263,11 @@ export default function Home() {
                         <p>{new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}</p>
                         <p className="font-semibold text-[#2D3436] mt-1">₹{event.price}</p>
                       </div>
-                      <Button className="rounded-full bg-[#4D96FF] hover:bg-[#3A86FF]" data-testid={`register-btn-${event.id}`}>
+                      <Button
+                        className="rounded-full bg-[#4D96FF] hover:bg-[#3A86FF]"
+                        onClick={() => navigate('/events')}
+                        data-testid={`register-btn-${event.id}`}
+                      >
                         Register Now
                       </Button>
                     </div>
@@ -340,6 +364,7 @@ export default function Home() {
 
       <Footer />
       < WhatsAppButton />
+      <OnboardingDialog open={showOnboarding} onOpenChange={handleOnboardingChange} />
     </div>
   );
 }

@@ -15,7 +15,6 @@ const EMPTY_FORM = {
   phone: '',
   password: '',
   confirmPassword: '',
-  role: 'USER',
 };
 
 export default function Register() {
@@ -35,7 +34,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const { firstName, lastName, username, email, phone, password, role } = form;
+      const { firstName, lastName, username, email, phone, password } = form;
       const response = await axios.post(`${BACKEND_URL}/register`, {
         firstName,
         lastName,
@@ -43,7 +42,6 @@ export default function Register() {
         email,
         phone,
         password,
-        role,
       });
       toast.success(response.data?.message || 'Registration successful! Check your email for the OTP.');
       navigate('/verify-otp', { state: { username, email } });
@@ -137,19 +135,6 @@ export default function Register() {
                 data-testid="register-phone-input"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2 text-[#2D3436]">Account Type</label>
-            <select
-              value={form.role}
-              onChange={update('role')}
-              className="w-full rounded-xl border-2 p-2 h-11"
-              data-testid="register-role-select"
-            >
-              <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
-            </select>
           </div>
 
           <div>

@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import axios from 'axios';
-import { BACKEND_URL } from '@/lib/api';
+import { api, BACKEND_URL } from '@/lib/api';
 import * as auth from '@/lib/auth';
 
 const AuthContext = createContext(null);
@@ -10,16 +10,35 @@ export function AuthProvider({ children }) {
     token: auth.getToken(),
     refreshToken: auth.getRefreshToken(),
     username: auth.getUsername(),
+    user: auth.getUser(),
   }));
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      const { data } = await api.get('/api/users/me');
+      auth.setUser(data);
+      setSession((prev) => ({ ...prev, user: data }));
+      return data;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (session.token && !session.user) {
+      fetchProfile();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.token]);
 
   const login = useCallback(({ token, refreshToken, username }) => {
     auth.setSession({ token, refreshToken, username });
-    setSession({ token, refreshToken, username });
+    setSession({ token, refreshToken, username, user: null });
   }, []);
 
   const logout = useCallback(() => {
     auth.clearSession();
-    setSession({ token: null, refreshToken: null, username: null });
+    setSession({ token: null, refreshToken: null, username: null, user: null });
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
@@ -39,11 +58,14 @@ export function AuthProvider({ children }) {
     () => ({
       ...session,
       isAuthenticated: Boolean(session.token),
+      role: session.user?.role || null,
+      isAdmin: session.user?.role === 'ADMIN',
       login,
       logout,
       refreshAccessToken,
+      fetchProfile,
     }),
-    [session, login, logout, refreshAccessToken]
+    [session, login, logout, refreshAccessToken, fetchProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
