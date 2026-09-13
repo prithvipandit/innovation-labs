@@ -10,6 +10,7 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import RichText from '@/components/RichText';
 import SearchBar from '@/components/SearchBar';
 import OnboardingDialog from '@/components/OnboardingDialog';
+import EventDetailsDialog from '@/components/EventDetailsDialog';
 import { api, BACKEND_URL } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
@@ -25,6 +26,7 @@ export default function Events() {
   const [seats, setSeats] = useState({});
   const [submitting, setSubmitting] = useState({});
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [detailsEvent, setDetailsEvent] = useState(null);
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -123,7 +125,7 @@ export default function Events() {
               return (
                 <Card
                   key={event.id}
-                  className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all bg-white"
+                  className="h-full flex flex-col rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all bg-white"
                   data-testid={`event-card-${event.id}`}
                 >
                   <div className="relative">
@@ -138,9 +140,17 @@ export default function Events() {
                       </span>
                     </div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl font-semibold font-heading mb-3 text-[#2D3436]">{event.title}</h3>
-                    <RichText text={event.description} className="text-[#636E72] mb-4" />
+                  <div className="p-6 flex flex-col flex-1">
+                    <h3 className="text-2xl font-semibold font-heading mb-2 text-[#2D3436] line-clamp-2">{event.title}</h3>
+                    <RichText text={event.description} className="text-[#636E72] mb-1 line-clamp-3" />
+                    <button
+                      type="button"
+                      className="text-sm font-semibold text-[#4D96FF] hover:underline mb-4 text-left"
+                      onClick={() => setDetailsEvent(event)}
+                      data-testid={`event-view-details-${event.id}`}
+                    >
+                      View Details
+                    </button>
 
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center gap-2 text-sm text-[#636E72]">
@@ -165,44 +175,46 @@ export default function Events() {
                       </p>
                     )}
 
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="text-sm text-[#636E72]">Price per seat</p>
-                        <p className="text-2xl font-bold text-[#FF6B6B]">₹{event.price}</p>
+                    <div className="mt-auto space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-[#636E72]">Price per seat</p>
+                          <p className="text-2xl font-bold text-[#FF6B6B]">₹{event.price}</p>
+                        </div>
+                        <div className="flex items-center border-2 rounded-full overflow-hidden">
+                          <button
+                            type="button"
+                            className="p-2 disabled:opacity-40"
+                            onClick={() => setSeatCount(event.id, getSeats(event.id) - 1)}
+                            disabled={!bookable || getSeats(event.id) <= 1}
+                            data-testid={`event-seats-decrease-${event.id}`}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="px-3 font-semibold" data-testid={`event-seats-${event.id}`}>
+                            {getSeats(event.id)}
+                          </span>
+                          <button
+                            type="button"
+                            className="p-2 disabled:opacity-40"
+                            onClick={() => setSeatCount(event.id, getSeats(event.id) + 1)}
+                            disabled={!bookable}
+                            data-testid={`event-seats-increase-${event.id}`}
+                          >
+                            <PlusIcon className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center border-2 rounded-full overflow-hidden">
-                        <button
-                          type="button"
-                          className="p-2 disabled:opacity-40"
-                          onClick={() => setSeatCount(event.id, getSeats(event.id) - 1)}
-                          disabled={!bookable || getSeats(event.id) <= 1}
-                          data-testid={`event-seats-decrease-${event.id}`}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="px-3 font-semibold" data-testid={`event-seats-${event.id}`}>
-                          {getSeats(event.id)}
-                        </span>
-                        <button
-                          type="button"
-                          className="p-2 disabled:opacity-40"
-                          onClick={() => setSeatCount(event.id, getSeats(event.id) + 1)}
-                          disabled={!bookable}
-                          data-testid={`event-seats-increase-${event.id}`}
-                        >
-                          <PlusIcon className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
 
-                    <Button
-                      onClick={() => handleBookSeats(event)}
-                      disabled={!bookable || submitting[event.id]}
-                      className="w-full rounded-full py-6 bg-[#4D96FF] hover:bg-[#3A86FF] font-bold text-lg transition-all hover:scale-105"
-                      data-testid={`register-btn-${event.id}`}
-                    >
-                      {submitting[event.id] ? 'Requesting...' : 'Request Seats'}
-                    </Button>
+                      <Button
+                        onClick={() => handleBookSeats(event)}
+                        disabled={!bookable || submitting[event.id]}
+                        className="w-full rounded-full py-6 bg-[#4D96FF] hover:bg-[#3A86FF] font-bold text-lg transition-all hover:scale-105"
+                        data-testid={`register-btn-${event.id}`}
+                      >
+                        {submitting[event.id] ? 'Requesting...' : 'Request Seats'}
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               );
@@ -220,6 +232,11 @@ export default function Events() {
       <Footer />
       <WhatsAppButton />
       <OnboardingDialog open={showOnboarding} onOpenChange={setShowOnboarding} />
+      <EventDetailsDialog
+        event={detailsEvent}
+        open={Boolean(detailsEvent)}
+        onOpenChange={(open) => !open && setDetailsEvent(null)}
+      />
     </div>
   );
 }

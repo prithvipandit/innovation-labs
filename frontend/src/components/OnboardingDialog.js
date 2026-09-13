@@ -40,7 +40,7 @@ export default function OnboardingDialog({ open, onOpenChange }) {
           <Button
             variant="outline"
             className="w-full rounded-full border-2 border-[#4D96FF] text-[#4D96FF] hover:bg-[#4D96FF] hover:text-white font-semibold"
-            onClick={() => go('/admin/login')}
+            onClick={() => go('/login')}
             data-testid="onboarding-login-btn"
           >
             <LogIn className="mr-2 w-4 h-4" /> Login

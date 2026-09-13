@@ -104,7 +104,7 @@ export const Navigation = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/admin/login">
+              <Link to="/login">
                 <Button
                   variant="outline"
                   className="rounded-full border-2 border-[#4D96FF] text-[#4D96FF] hover:bg-[#4D96FF] hover:text-white"
@@ -165,7 +165,7 @@ export const Navigation = () => {
                 </Button>
               </>
             ) : (
-              <Link to="/admin/login" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                 <Button
                   variant="outline"
                   className="w-full rounded-full border-2 border-[#4D96FF] text-[#4D96FF]"

@@ -88,7 +88,7 @@ export default function ForgotPassword() {
         </form>
 
         <p className="text-center text-sm text-[#636E72] mt-6">
-          <Link to="/admin/login" className="font-semibold text-[#4D96FF] hover:underline">
+          <Link to="/login" className="font-semibold text-[#4D96FF] hover:underline">
             Back to login
           </Link>
         </p>

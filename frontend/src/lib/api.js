@@ -38,7 +38,8 @@ const redirectToLogin = () => {
     sessionExpiredNoticeShown = true;
     toast.error('Session expired. Please log in again.');
   }
-  window.location.href = '/admin/login';
+  const loginPath = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
+  window.location.href = loginPath;
 };
 
 api.interceptors.response.use(
@@ -52,7 +53,7 @@ api.interceptors.response.use(
 
     const refreshToken = getRefreshToken();
     if (!refreshToken) {
-      if (window.location.pathname !== '/admin/login') {
+      if (window.location.pathname !== '/admin/login' && window.location.pathname !== '/login') {
         redirectToLogin();
       }
       return Promise.reject(error);

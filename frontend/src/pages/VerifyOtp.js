@@ -40,6 +40,17 @@ export default function VerifyOtp() {
         email: email.trim(),
         otp,
       });
+      // The backend always answers 200 here, even for a wrong/expired OTP — it only
+      // signals failure via a null token and a message like "Invalid or expired OTP".
+      // So success has to be judged by "did we actually get a token", not by the
+      // request not throwing.
+      if (!response.data?.token) {
+        toast.error(response.data?.message || 'Invalid OTP. Please try again.');
+        setOtp('');
+        setOtpError(true);
+        setShakeCount((count) => count + 1);
+        return;
+      }
       // Verification logs the account straight in — no separate login step needed.
       login({
         token: response.data.token,
@@ -47,7 +58,7 @@ export default function VerifyOtp() {
         username: username.trim(),
       });
       toast.success(response.data?.message || 'Account verified!');
-      navigate('/admin/dashboard');
+      navigate('/account');
     } catch (error) {
       // Wrong/expired OTP: stay put, flag the field, and let them try again
       // rather than bouncing them out of the flow.
@@ -134,7 +145,7 @@ export default function VerifyOtp() {
           <Link to="/register" className="font-semibold text-[#4D96FF] hover:underline" data-testid="verify-otp-register-different-link">
             Create a different account
           </Link>
-          <Link to="/admin/login" className="font-semibold text-[#4D96FF] hover:underline" data-testid="verify-otp-back-to-login-link">
+          <Link to="/login" className="font-semibold text-[#4D96FF] hover:underline" data-testid="verify-otp-back-to-login-link">
             Back to login
           </Link>
         </div>

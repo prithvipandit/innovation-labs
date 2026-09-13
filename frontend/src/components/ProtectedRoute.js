@@ -6,7 +6,8 @@ export default function ProtectedRoute({ children, role }) {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    const loginPath = role === 'ADMIN' ? '/admin/login' : '/login';
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   // While the profile (and therefore role) is still loading, don't bounce the

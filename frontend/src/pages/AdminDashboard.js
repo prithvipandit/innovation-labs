@@ -497,7 +497,7 @@ export default function AdminDashboard() {
           {/* Product Requests Tab */}
           <TabsContent value="requests">
             <Card className="rounded-2xl overflow-hidden">
-              <Table>
+              <Table className="min-w-[820px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Customer</TableHead>
@@ -609,7 +609,7 @@ export default function AdminDashboard() {
               </div>
             )}
             <Card className="rounded-2xl overflow-hidden">
-              <Table>
+              <Table className="min-w-[840px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Customer</TableHead>

@@ -9,6 +9,7 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import RichText from '@/components/RichText';
 import SearchBar from '@/components/SearchBar';
 import OnboardingDialog from '@/components/OnboardingDialog';
+import ProductDetailsDialog from '@/components/ProductDetailsDialog';
 import { toast } from 'sonner';
 import { api, BACKEND_URL } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
@@ -27,6 +28,7 @@ export default function Products() {
   const [quantities, setQuantities] = useState({});
   const [submitting, setSubmitting] = useState({});
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [detailsProduct, setDetailsProduct] = useState(null);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -146,7 +148,7 @@ export default function Products() {
               return (
                 <Card
                   key={product.id}
-                  className="rounded-3xl overflow-hidden border-2 border-transparent hover:border-[#4D96FF] transition-all duration-300 group bg-white"
+                  className="h-full flex flex-col rounded-3xl overflow-hidden border-2 border-transparent hover:border-[#4D96FF] transition-all duration-300 group bg-white"
                   data-testid={`product-card-${product.id}`}
                 >
                   <div className="relative overflow-hidden">
@@ -161,12 +163,20 @@ export default function Products() {
                       </span>
                     )}
                   </div>
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-xl font-semibold font-heading text-[#2D3436]">{product.name}</h3>
-                      <span className="text-xl font-bold text-[#FF6B6B]">₹{product.price}</span>
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex justify-between items-start mb-2 gap-2">
+                      <h3 className="text-xl font-semibold font-heading text-[#2D3436] line-clamp-2">{product.name}</h3>
+                      <span className="text-xl font-bold text-[#FF6B6B] whitespace-nowrap">₹{product.price}</span>
                     </div>
-                    <RichText text={product.description} className="text-[#636E72] mb-4" />
+                    <RichText text={product.description} className="text-[#636E72] mb-1 line-clamp-3" />
+                    <button
+                      type="button"
+                      className="text-sm font-semibold text-[#4D96FF] hover:underline mb-3 text-left"
+                      onClick={() => setDetailsProduct(product)}
+                      data-testid={`product-view-details-${product.id}`}
+                    >
+                      View Details
+                    </button>
                     <div className="flex gap-2 mb-2">
                       <span className="text-xs px-3 py-1 rounded-full bg-[#FFD93D]/20 text-[#2D3436] font-medium">
                         {product.category}
@@ -178,40 +188,42 @@ export default function Products() {
                     <p className="text-xs text-[#636E72] mb-4">
                       {outOfStock ? 'Currently unavailable' : `${product.stock} in stock`}
                     </p>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="flex items-center border-2 rounded-full overflow-hidden">
-                        <button
-                          type="button"
-                          className="p-2 disabled:opacity-40"
-                          onClick={() => setQuantity(product.id, getQuantity(product.id) - 1)}
-                          disabled={outOfStock || getQuantity(product.id) <= 1}
-                          data-testid={`product-qty-decrease-${product.id}`}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="px-3 font-semibold" data-testid={`product-qty-${product.id}`}>
-                          {getQuantity(product.id)}
-                        </span>
-                        <button
-                          type="button"
-                          className="p-2 disabled:opacity-40"
-                          onClick={() => setQuantity(product.id, getQuantity(product.id) + 1)}
-                          disabled={outOfStock}
-                          data-testid={`product-qty-increase-${product.id}`}
-                        >
-                          <PlusIcon className="w-4 h-4" />
-                        </button>
+                    <div className="mt-auto space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center border-2 rounded-full overflow-hidden">
+                          <button
+                            type="button"
+                            className="p-2 disabled:opacity-40"
+                            onClick={() => setQuantity(product.id, getQuantity(product.id) - 1)}
+                            disabled={outOfStock || getQuantity(product.id) <= 1}
+                            data-testid={`product-qty-decrease-${product.id}`}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="px-3 font-semibold" data-testid={`product-qty-${product.id}`}>
+                            {getQuantity(product.id)}
+                          </span>
+                          <button
+                            type="button"
+                            className="p-2 disabled:opacity-40"
+                            onClick={() => setQuantity(product.id, getQuantity(product.id) + 1)}
+                            disabled={outOfStock}
+                            data-testid={`product-qty-increase-${product.id}`}
+                          >
+                            <PlusIcon className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
+                      <Button
+                        className="w-full rounded-full bg-[#4D96FF] hover:bg-[#3A86FF] font-semibold"
+                        onClick={() => handleAddToWishlist(product)}
+                        disabled={outOfStock || submitting[product.id]}
+                        data-testid={`product-wishlist-btn-${product.id}`}
+                      >
+                        <Heart className="mr-2 w-4 h-4" />
+                        {outOfStock ? 'Out of Stock' : submitting[product.id] ? 'Adding...' : 'Add to Wishlist'}
+                      </Button>
                     </div>
-                    <Button
-                      className="w-full rounded-full bg-[#4D96FF] hover:bg-[#3A86FF] font-semibold"
-                      onClick={() => handleAddToWishlist(product)}
-                      disabled={outOfStock || submitting[product.id]}
-                      data-testid={`product-wishlist-btn-${product.id}`}
-                    >
-                      <Heart className="mr-2 w-4 h-4" />
-                      {outOfStock ? 'Out of Stock' : submitting[product.id] ? 'Adding...' : 'Add to Wishlist'}
-                    </Button>
                   </div>
                 </Card>
               );
@@ -229,6 +241,11 @@ export default function Products() {
       <Footer />
       <WhatsAppButton />
       <OnboardingDialog open={showOnboarding} onOpenChange={setShowOnboarding} />
+      <ProductDetailsDialog
+        product={detailsProduct}
+        open={Boolean(detailsProduct)}
+        onOpenChange={(open) => !open && setDetailsProduct(null)}
+      />
     </div>
   );
 }

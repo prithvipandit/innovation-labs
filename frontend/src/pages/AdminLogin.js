@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const { login, logout } = useAuth();
+  const { login, logout, fetchProfile } = useAuth();
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -35,9 +35,8 @@ export default function AdminLogin() {
         username: credentials.username,
       });
       toast.success(response.data.message || 'Login successful!');
-      setTimeout(() => {
-        navigate('/admin/dashboard');
-      }, 500);
+      const profile = await fetchProfile();
+      navigate(profile?.role === 'ADMIN' ? '/admin/dashboard' : '/account');
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error.response?.data?.detail || error.response?.data?.message || 'Invalid credentials');
@@ -57,8 +56,8 @@ export default function AdminLogin() {
               className="h-16 w-auto mx-auto"
             />
           </div>
-          <h1 className="text-3xl font-bold font-heading text-[#2D3436]">Admin Login</h1>
-          <p className="text-[#636E72] mt-2">Access the dashboard</p>
+          <h1 className="text-3xl font-bold font-heading text-[#2D3436]">Admin Portal</h1>
+          <p className="text-[#636E72] mt-2">Staff login — access the management dashboard</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -107,8 +106,8 @@ export default function AdminLogin() {
             <Link to="/forgot-password" className="text-[#4D96FF] hover:underline" data-testid="forgot-password-link">
               Forgot password?
             </Link>
-            <Link to="/register" className="text-[#4D96FF] hover:underline" data-testid="register-link">
-              Create an account
+            <Link to="/login" className="text-[#4D96FF] hover:underline" data-testid="customer-login-link">
+              Customer login
             </Link>
           </div>
         </form>

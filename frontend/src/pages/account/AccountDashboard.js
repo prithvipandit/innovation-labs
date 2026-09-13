@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Heart, CalendarCheck, Mail, LogOut, X } from 'lucide-react';
+import { Heart, CalendarCheck, Mail, LogOut, X, Package, Calendar, MapPin, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -108,8 +108,9 @@ export default function AccountDashboard() {
 
           {/* Product Wishlist */}
           <TabsContent value="products">
-            <Card className="rounded-2xl overflow-hidden">
-              <Table>
+            {/* Desktop/tablet: table */}
+            <Card className="rounded-2xl overflow-hidden hidden md:block">
+              <Table className="min-w-[720px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Product</TableHead>
@@ -123,11 +124,13 @@ export default function AccountDashboard() {
                 <TableBody>
                   {productWishlist.map((item) => (
                     <TableRow key={item.id} data-testid={`account-product-row-${item.id}`}>
-                      <TableCell className="flex items-center gap-3">
-                        {item.productImageUrl && (
-                          <img src={item.productImageUrl} alt={item.productName} className="w-10 h-10 rounded-lg object-cover" />
-                        )}
-                        <span className="font-medium">{item.productName}</span>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {item.productImageUrl && (
+                            <img src={item.productImageUrl} alt={item.productName} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                          )}
+                          <span className="font-medium">{item.productName}</span>
+                        </div>
                       </TableCell>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell>
@@ -156,16 +159,61 @@ export default function AccountDashboard() {
                   ))}
                 </TableBody>
               </Table>
-              {productWishlist.length === 0 && (
-                <p className="text-center py-10 text-[#636E72]">You haven't wishlisted any products yet.</p>
-              )}
             </Card>
+
+            {/* Mobile: feed-style cards */}
+            <div className="md:hidden space-y-4">
+              {productWishlist.map((item) => (
+                <Card key={item.id} className="rounded-2xl overflow-hidden" data-testid={`account-product-card-${item.id}`}>
+                  {item.productImageUrl && (
+                    <img src={item.productImageUrl} alt={item.productName} className="w-full h-40 object-cover" />
+                  )}
+                  <div className="p-4">
+                    <div className="flex justify-between items-start gap-3 mb-3">
+                      <h3 className="font-semibold text-lg text-[#2D3436] leading-tight">{item.productName}</h3>
+                      <span className={`inline-flex flex-shrink-0 px-2.5 py-0.5 rounded-md border text-xs font-semibold ${productStatusClass(item.status)}`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 text-sm text-[#636E72] mb-3">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 flex-shrink-0" />
+                        <span>Quantity: <span className="font-medium text-[#2D3436]">{item.quantity}</span></span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 flex-shrink-0" />
+                        <span>Requested {item.requestedAt ? new Date(item.requestedAt).toLocaleDateString() : '—'}</span>
+                      </div>
+                    </div>
+                    {item.adminNote && (
+                      <p className="text-sm text-[#636E72] bg-gray-50 rounded-xl p-3 mb-3 italic">"{item.adminNote}"</p>
+                    )}
+                    {item.status === 'PENDING' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => handleCancelProduct(item.id)}
+                        data-testid={`account-cancel-product-mobile-${item.id}`}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {productWishlist.length === 0 && (
+              <p className="text-center py-10 text-[#636E72]">You haven't wishlisted any products yet.</p>
+            )}
           </TabsContent>
 
           {/* Event Wishlist */}
           <TabsContent value="events">
-            <Card className="rounded-2xl overflow-hidden">
-              <Table>
+            {/* Desktop/tablet: table */}
+            <Card className="rounded-2xl overflow-hidden hidden md:block">
+              <Table className="min-w-[780px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Event</TableHead>
@@ -207,10 +255,59 @@ export default function AccountDashboard() {
                   ))}
                 </TableBody>
               </Table>
-              {eventBookings.length === 0 && (
-                <p className="text-center py-10 text-[#636E72]">You haven't booked any events yet.</p>
-              )}
             </Card>
+
+            {/* Mobile: feed-style cards */}
+            <div className="md:hidden space-y-4">
+              {eventBookings.map((booking) => (
+                <Card key={booking.id} className="rounded-2xl overflow-hidden" data-testid={`account-event-card-${booking.id}`}>
+                  {booking.eventImageUrl && (
+                    <img src={booking.eventImageUrl} alt={booking.eventTitle} className="w-full h-40 object-cover" />
+                  )}
+                  <div className="p-4">
+                    <div className="flex justify-between items-start gap-3 mb-3">
+                      <h3 className="font-semibold text-lg text-[#2D3436] leading-tight">{booking.eventTitle}</h3>
+                      <span className={`inline-flex flex-shrink-0 px-2.5 py-0.5 rounded-md border text-xs font-semibold ${eventStatusClass(booking.status)}`}>
+                        {booking.status}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 text-sm text-[#636E72] mb-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 flex-shrink-0" />
+                        <span>{booking.eventStartDate}</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <span>{booking.eventLocation}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 flex-shrink-0" />
+                        <span>{booking.seats} seat(s)</span>
+                      </div>
+                    </div>
+                    <p className="text-xl font-bold text-[#FF6B6B] mb-3">₹{booking.totalAmount}</p>
+                    {booking.adminNote && (
+                      <p className="text-sm text-[#636E72] bg-gray-50 rounded-xl p-3 mb-3 italic">"{booking.adminNote}"</p>
+                    )}
+                    {['PENDING', 'WAITLISTED', 'APPROVED'].includes(booking.status) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => handleCancelBooking(booking.id)}
+                        data-testid={`account-cancel-event-mobile-${booking.id}`}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {eventBookings.length === 0 && (
+              <p className="text-center py-10 text-[#636E72]">You haven't booked any events yet.</p>
+            )}
           </TabsContent>
 
           {/* Communications */}
