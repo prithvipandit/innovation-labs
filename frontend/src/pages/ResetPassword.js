@@ -43,8 +43,21 @@ export default function ResetPassword() {
         otp,
         newPassword,
       });
+      // The backend always answers 200 here, even for a wrong/expired OTP — this
+      // endpoint never returns a token to check, so the only signal available is the
+      // message text. Every failure message from this endpoint ("Invalid or expired
+      // OTP", "User not found", "New password cannot be empty") lacks the word
+      // "successfully", which only the real success message contains.
+      const succeeded = response.data?.message?.toLowerCase().includes('successfully');
+      if (!succeeded) {
+        toast.error(response.data?.message || 'Invalid OTP. Please try again.');
+        setOtp('');
+        setOtpError(true);
+        setShakeCount((count) => count + 1);
+        return;
+      }
       toast.success(response.data?.message || 'Password reset successful! Please log in.');
-      navigate('/admin/login');
+      navigate('/login');
     } catch (error) {
       // Wrong/expired OTP: stay put, flag the field, and let them try again
       // rather than bouncing them out of the flow.
@@ -148,7 +161,7 @@ export default function ResetPassword() {
           <Link to="/forgot-password" className="font-semibold text-[#4D96FF] hover:underline" data-testid="reset-password-restart-link">
             Use a different account
           </Link>
-          <Link to="/admin/login" className="font-semibold text-[#4D96FF] hover:underline" data-testid="reset-password-back-to-login-link">
+          <Link to="/login" className="font-semibold text-[#4D96FF] hover:underline" data-testid="reset-password-back-to-login-link">
             Back to login
           </Link>
         </div>

@@ -7,11 +7,13 @@ import Home from "@/pages/Home";
 import Products from "@/pages/Products";
 import Events from "@/pages/Events";
 import AdminLogin from "@/pages/AdminLogin";
+import Login from "@/pages/Login";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Register from "@/pages/Register";
 import VerifyOtp from "@/pages/VerifyOtp";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+import AccountDashboard from "@/pages/account/AccountDashboard";
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/events" element={<Events />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -30,8 +33,16 @@ function App() {
             <Route
               path="/admin/dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute role="ADMIN">
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <AccountDashboard />
                 </ProtectedRoute>
               }
             />
